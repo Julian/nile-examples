@@ -16,7 +16,7 @@ These examples let you choose what kind of SaaS offering is provided, one of:
 - [YOLO](../usecases/README.md#yolo)
 
 For this service, you can use Nile's built-in entities to enforce access policies.
-This example uses Python and the NILE REST API to demonstrate authorization features in Nile in the following workflow:
+This example uses the Nile Python SDK to demonstrate authorization features in Nile in the following workflow:
 
 - List policies
 - Create a new policy that denies the user access to instances of the type `DB` (organization is provided in the request)
@@ -34,12 +34,12 @@ This example uses Python and the NILE REST API to demonstrate authorization feat
 
 ## Install Dependencies
 
-Note that this example has been validated with Python 3.8.9 so please ensure you are using a compatible version.
+You'll need a version of Python at least as new as 3.7.
 
 Run the following command:
 
 ```
-pip3 install -r requirements.txt
+python3 -m venv venv && venv/bin/python3 install -r requirements.txt
 ```
 
 ## Setup
@@ -66,5 +66,5 @@ yarn --cwd ../quickstart/ install && yarn --cwd ../quickstart/ start
 To execute the workflow, run the following command:
 
 ```
-python authz.py
+venv/bin/python authz.py
 ```

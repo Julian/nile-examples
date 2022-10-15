@@ -1,13 +1,24 @@
-#! python
+#! /usr/bin/env python
 
 # pylint: disable=consider-using-f-string
 
 import os
 import json
 import sys
-import requests
 import emoji
 from dotenv import load_dotenv
+
+from nile_api import AuthenticatedClient, Client
+from nile_api.api.access import (
+    create_policy, delete_policy, list_policies,
+)
+from nile_api.api.developers import login_developer
+from nile_api.api.organizations import list_organizations
+from nile_api.models.login_info import LoginInfo
+from nile_api.models.create_policy_request import CreatePolicyRequest
+from nile_api.models.action import Action
+from nile_api.models.resource import Resource
+from nile_api.models.subject import Subject
 
 load_dotenv(override=True)
 required_params = [
@@ -41,101 +52,74 @@ index=0
 NILE_TENANT1_EMAIL = users[0]['email']
 NILE_TENANT_PASSWORD = users[0]['password']
 
+token = login_developer.sync(
+    client=Client(base_url=NILE_URL),
+    info=LoginInfo(
+        email=NILE_DEVELOPER_EMAIL,
+        password=NILE_DEVELOPER_PASSWORD,
+    ),
+)
 
-def list_policies():
-    """List all authorization policies in an organization"""
+client = AuthenticatedClient(base_url=NILE_URL, token=token.token)
 
-    global org_id
-
-    # List
-    path = "/workspaces/{}/orgs/{}/access/policies".format(NILE_WORKSPACE, org_id)
-    #print(headers, NILE_URL, path)
-    response = requests.get(NILE_URL+path, headers=headers, timeout=30)
-    if response.status_code == 200:
-        print(json.dumps(response.json(), indent=2))
-        return response.json()
-    else:
-        print(emoji.emojize(':red_circle:') + " response status code is {}".format(response.status_code))
-        sys.exit(1)
-
-def get_org_id_from_org_name(org_name):
-    """Get an organization ID from an organization name"""
-
-    path = "/workspaces/{}/orgs".format(NILE_WORKSPACE)
-    #print(headers, NILE_URL, path)
-    response = requests.get(NILE_URL+path, headers=headers, timeout=30)
-    if response.status_code == 200:
-        for org in response.json():
-            if org.get('name') == org_name:
-                org_id = org.get('id')
-                break
-        if 'org_id' not in locals():
-            print(emoji.emojize(":red_circle:") + " Could not map organization name {} to an ID".format(org_name))
-            sys.exit(1)
-        print(emoji.emojize(':check_mark_button:') + " Mapped organization name {} to ID {}".format(org_name, org_id))
-        return org_id
-    else:
-        print(emoji.emojize(':red_circle:') + " response status code is {}".format(response.status_code))
-        sys.exit(1)
-
-
-
-# Get Nile access token
-data = {
-    "email"    : NILE_DEVELOPER_EMAIL,
-    "password" : NILE_DEVELOPER_PASSWORD
-}
-path = "/auth/login"
-response = requests.post(NILE_URL+path, json=data, timeout=30)
-if response.status_code == 200:
-    NILE_ACCESS_TOKEN=response.json()['token']
-    print(emoji.emojize(':check_mark_button:') + " --> Logged into Nile as developer {}\nToken: {}\n".format(NILE_DEVELOPER_EMAIL,NILE_ACCESS_TOKEN))
+organizations = list_organizations.sync(
+    workspace=NILE_WORKSPACE,
+    client=client,
+)
+matching = (
+    organization
+    for organization in organizations
+    if organization.name == NILE_ORGANIZATION_NAME
+)
+org = next(matching, None)
+if org is not None:
+    print(emoji.emojize(':check_mark_button:') + " Mapped organization name {} to ID {}".format(org.name, org.id))
 else:
-    print(emoji.emojize(":red_circle:") + " Could not get Nile access token for developer {}".format(NILE_DEVELOPER_EMAIL))
+    print(emoji.emojize(":red_circle:") + " Could not map organization name {} to an ID".format(NILE_ORGANIZATION_NAME))
     sys.exit(1)
-
-headers = {
-  "Authorization": "Bearer "+NILE_ACCESS_TOKEN
-}
-
-org_id = get_org_id_from_org_name(NILE_ORGANIZATION_NAME)
 
 print("\nPolicies at start:")
-policies_start = list_policies()
+policies_start = list_policies.sync(
+    client=client,
+    workspace=NILE_WORKSPACE,
+    org=org.id,
+)
+print([each.name for each in policies_start])
 
 # Create a new policy
-data = {
-    "actions"  : ["deny"],
-    "resource" : {"type" : NILE_ENTITY_NAME},
-    "subject"  : {"email": NILE_TENANT1_EMAIL}
-}
-json_string = json.dumps(data)
-print("\nCreating new policy {}".format(json_string))
-path = "/workspaces/{}/orgs/{}/access/policies".format(NILE_WORKSPACE, org_id)
-#print(headers, NILE_URL, path)
-response = requests.post(NILE_URL+path, headers=headers, json=data, timeout=30)
-if response.status_code == 201:
-    policy_id=response.json()['id']
-    print(emoji.emojize(':check_mark_button:') + " policy id is {}".format(policy_id))
-else:
-    print("response status code is {}".format(response.status_code))
-    sys.exit(1)
+data = CreatePolicyRequest(
+    actions=[Action.DENY],
+    resource=Resource(type=NILE_ENTITY_NAME),
+    subject=Subject(email=NILE_TENANT1_EMAIL),
+    )
+print(f"\nCreating new policy {data}.")
+policy = create_policy.sync(
+    client=client,
+    workspace=NILE_WORKSPACE,
+    org=org.id,
+    json_body=data,
+)
+print(emoji.emojize(':check_mark_button:') + " policy id is {}".format(policy.id))
 
 print("\nPolicies post-create:")
-list_policies()
+print(list_policies.sync(client=client, workspace=NILE_WORKSPACE, org=org.id))
 
 # Delete the policy just created
-path = "/workspaces/{}/orgs/{}/access/policies/{}".format(NILE_WORKSPACE, org_id, policy_id)
-#print(headers, NILE_URL, path)
-response = requests.delete(NILE_URL+path, headers=headers, timeout=30)
-if response.status_code == 204:
-    print(emoji.emojize(':check_mark_button:') + " policy id {} is deleted".format(policy_id))
-else:
-    print(emoji.emojize(':red_circle:') + "response status code is {}".format(response.status_code))
-    sys.exit(1)
+response = delete_policy.sync_detailed(
+    client=client,
+    workspace=NILE_WORKSPACE,
+    org=org.id,
+    policy_id=policy.id,
+)
+print("policy id {} is deleted".format(policy.id))
 
 print("\nPolicies post-delete:")
-policies_end = list_policies()
+policies_end = list_policies.sync(
+    client=client,
+    workspace=NILE_WORKSPACE,
+    org=org.id,
+)
+print([each.name for each in policies_end])
 
 if policies_start != policies_end:
     print(emoji.emojize(':red_circle:') + "Something is wrong, policies at start should equal policies at end")
