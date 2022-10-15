@@ -45,7 +45,7 @@ for name, value in params.items():
         )
         sys.exit(1)
 
-users_path = Path(__file__).parent.parent.joinpath(
+users_path = Path(__file__).absolute().parent.parent.joinpath(
     "usecases",
     params["NILE_ENTITY_NAME"],
     "init",
