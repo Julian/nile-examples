@@ -39,7 +39,7 @@ Verify you are running Python version 3.7 or newer (check with `python --version
 Run the following command:
 
 ```
-python3 -m venv venv && venv/bin/python3 install -r requirements.txt
+python3 -m venv venv && venv/bin/python3 -m pip install -r requirements.txt
 ```
 
 ## Setup

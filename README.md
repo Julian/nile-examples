@@ -100,7 +100,7 @@ You can configure these in the control plane so that they are aligned to your bu
 
 - [Authorization](authz/) | JS SDK | Use ABAC to grant and revoke permissions to resources
 - [Authorization App Backend](authz-be/) | JS SDK | Authorize users against Nile control plane for your backend applications
-- [Authorization with Python](authz-python/) | Python REST | Use ABAC to grant and revoke permissions to resources
+- [Authorization with Python](authz-python/) | Python SDK | Use ABAC to grant and revoke permissions to resources
 
 ## Webapp
 
