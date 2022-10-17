@@ -34,7 +34,7 @@ This example uses the Nile Python SDK to demonstrate authorization features in N
 
 ## Install Dependencies
 
-You'll need a version of Python at least as new as 3.7.
+Verify you are running Python version 3.7 or newer (check with `python --version`)
 
 Run the following command:
 
