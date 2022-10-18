@@ -14,9 +14,13 @@
     "typescript": "^4.7.3"
   },
   "scripts": {
-    "prestart": "yarn --cwd ../utils-module-js/ install",
-    "start": "ts-node src/index.ts",
-    "poststart": "ts-node src/find-instance.ts"
+    "setup-dev": "ts-node src/dev.ts",
+    "setup-ws": "ts-node src/ws.ts",
+    "setup-entity": "ts-node src/entity.ts",
+    "setup-org": "ts-node src/org.ts",
+    "setup-user": "ts-node src/user.ts",
+    "setup-entity-instance": "ts-node src/entity-instance.ts",
+    "start": "yarn setup-dev && yarn setup-ws && yarn setup-entity && yarn setup-user && yarn setup-org && yarn setup-entity-instance"
   },
   "engines": {
     "node": ">=18.0.0"

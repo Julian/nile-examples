@@ -59,12 +59,13 @@ async function setupDeveloper() {
         password : NILE_DEVELOPER_PASSWORD,
       }
     })
-    console.log(emoji.get('white_check_mark'), `Signing up for Nile at ${NILE_URL}, workspace ${NILE_WORKSPACE}, as developer ${NILE_DEVELOPER_EMAIL}`);
+    console.log(emoji.get('white_check_mark'), `Signed up for Nile at ${NILE_URL}, workspace ${NILE_WORKSPACE}, as developer ${NILE_DEVELOPER_EMAIL}`);
   } catch (error:any) {
     if (error.message == "user already exists") {
       console.log(emoji.get('dart'), `Developer ${NILE_DEVELOPER_EMAIL} already exists`);
     } else {
       console.error(error);
+      process.exit(1);
     }
   };
 
@@ -81,9 +82,9 @@ async function setupDeveloper() {
         .catch((error:any) => {
           if (error.message == "workspace already exists") {
             console.error(emoji.get('x'), `Error: workspace ${NILE_WORKSPACE} already exists (workspace names are globally unique)`);
-            process.exit(1);
           } else {
             console.error(error);
+            process.exit(1);
           }
         });
   }

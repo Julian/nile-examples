@@ -33,7 +33,7 @@ It provides self-service workflows for user signup/login, org creation, and inst
 * [Install Dependencies](#install-dependencies)
 * [Initialize Nile](#initialize-nile)
 * [Run the web server locally](#run-the-web-server-locally)
-* [Validate](#validate)
+* [Playbook](#playbook)
 
 ## Setup Certificates
 
@@ -65,17 +65,7 @@ yarn install
 
 To run these examples, you need to access to Nile. Please [reach out](https://www.thenile.dev) for more information.
 
-1. Run through the [quickstart](../quickstart) to setup your Nile control plane. Afterwards, you will be able to use these parameters:
-
-   - `NILE_URL`
-   - `NILE_WORKSPACE`
-   - `NILE_DEVELOPER_EMAIL`
-   - `NILE_DEVELOPER_PASSWORD`
-   - `NILE_ENTITY_NAME`: refers to one of your selected [usecases](../usecases/).
-
-   [YOLO](../usecases/README.md#yolo): follow steps to define your own service offering (and thus a new `NILE_ENTITY_NAME`)
-
-2. For all examples, you need a local file with your Nile configuration.
+1. For all examples, you need a local file with your Nile configuration.
 For that purpose, at the top-level of the examples, copy the `.env.defaults` file to `.env`:
 
    ```bash
@@ -84,6 +74,13 @@ For that purpose, at the top-level of the examples, copy the `.env.defaults` fil
    ```
 
    Set the values in this `.env` file to match the values you want in your control plane.
+   Be sure to set the following parameters
+
+   - `NILE_URL`
+   - `NILE_WORKSPACE`
+   - `NILE_DEVELOPER_EMAIL`
+   - `NILE_DEVELOPER_PASSWORD`
+   - `NILE_ENTITY_NAME`: refers to one of your selected [usecases](../usecases/), default value is `DB`.
 
 3. Run the following command to preconfigure the Nile control plane with the mock usecase so that you're not starting from scratch.
 
@@ -91,7 +88,7 @@ For that purpose, at the top-level of the examples, copy the `.env.defaults` fil
    yarn setup-nile
    ```
 
-4. (Optional) If you want to run the data-plane reconciler that synchronizes events between the control plane and data plane (e.g. if you use the webapp to create new entity instances), start the reconciler in a separate window.  See the instructions in the [Pulumi example](../data-plane/pulumi/).
+4. (Optional) If you want to hook up your Nile control plane to a data plane and provision real resources, run the reconciler to synchronize events between the control plane and data plane (e.g. if you use the webapp to create new entity instances). Follow the instructions in the [Pulumi example](../data-plane/pulumi/) and start the reconciler in a separate terminal window.
 
 ## Run the web server locally
 
@@ -101,9 +98,9 @@ Run the web server locally:
 yarn dev
 ```
 
-## Validate
+## Playbook
 
-1. As an end user: open [https://local.thenile.dev](http://local.thenile.dev) with your browser and log in as one of the predefined users for the entity type from the [usecases](../usecases/).
+1. As an end user: open [https://local.thenile.dev](http://local.thenile.dev) with your browser and log in as one of the predefined users for the entity type from the [usecases](../usecases/). For example, for entity type `DB`, you can log in as `polina@demo.io` (password is `password`).
 
    The user login screen should resemble below:
 
@@ -113,15 +110,16 @@ yarn dev
 
    ![image](images/instances.png)
 
-3. Click on one of the instances to see metrics.
+3. Click on one of the instances to see metrics. These metrics are currently mock generated from the webapp itself, so it will take some time for them to initialize and start to render.
 
    ![image](images/metrics.png)
 
 4. Logout. Then instead of logging in as an existing user, sign up as a new user.  Enter any email/password, then create an organization name.
 
-5. Create a new DB instance.
+5. Create a new instance.  If you are running the reconciler in a separate terminal window (see [initialize Nile](#initialize-nile)), then observe the resources being provisioned and updating Nile with its status.
 
 6. As a Nile developer: log into the [Nile Admin Dashboard](https://nad.thenile.dev/) to see the control plane and entity instances.
+Notice the multi-tenancy features, with tenants belonging to different organizations.
 For the email and password, use the `NILE_DEVELOPER_EMAIL` and `NILE_DEVELOPER_PASSWORD` values you specified in the `.env` file.
 
    Your dashboard should resemble below:
